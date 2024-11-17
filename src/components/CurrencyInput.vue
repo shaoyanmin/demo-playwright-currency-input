@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useField } from 'vee-validate'
 import * as yup from 'yup'
 
@@ -15,6 +15,7 @@ const emit = defineEmits<{
 
 const schema = yup.number()
   .required('Value is required')
+  .typeError('Value must be a number')
   .min(0, 'Value must be positive')
 
 const { value, errorMessage } = useField<string>(props.name, schema)
@@ -24,30 +25,29 @@ const isFocused = ref(false)
 const formatCurrency = (val: string | number): string => {
   if (!val) return ''
   const num = typeof val === 'string' ? parseFloat(val.replace(/[^\d.-]/g, '')) : val
+  if (Number.isNaN(num)) return val.toString()
   return `$ ${num.toLocaleString('en-US')}`
 }
 
-const unformatCurrency = (val: string): string => {
-  return val.replace(/[^\d.-]/g, '')
-}
+const innerFormatedValue = computed(() => {
+  if (isFocused.value) {
+    return value.value !== null ? value.value?.toString() : undefined
+  } else {
+    return formatCurrency(value.value)
+  }
+})
 
 const handleFocus = () => {
   isFocused.value = true
-  const unformattedValue = unformatCurrency(value.value)
-  value.value = unformattedValue
 }
 
 const handleBlur = () => {
   isFocused.value = false
-  if (value.value) {
-    const formattedValue = formatCurrency(value.value)
-    value.value = formattedValue
-  }
 }
 
 const handleInput = (event: Event) => {
   const input = event.target as HTMLInputElement
-  const newValue = input.value.replace(/[^\d.-]/g, '')
+  const newValue = input.value
   value.value = newValue
   emit('update:modelValue', newValue)
 }
@@ -59,12 +59,13 @@ const handleInput = (event: Event) => {
     <input
       :id="name"
       type="text"
-      :value="value"
+      :value="innerFormatedValue"
       @focus="handleFocus"
       @blur="handleBlur"
       @input="handleInput"
       class="input"
       :class="{ 'error': errorMessage }"
+      data-testid="pw-currency-input"
     />
     <span v-if="errorMessage" class="error-message">{{ errorMessage }}</span>
   </div>

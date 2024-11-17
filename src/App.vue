@@ -15,7 +15,7 @@ const amount = ref('')
         label="Amount"
         v-model="amount"
       />
-      <div class="value-display">
+      <div class="value-display" data-testid="pw-value-display">
         <strong>Current Value:</strong> {{ amount }}
       </div>
     </Form>
