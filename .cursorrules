@@ -1,0 +1,11 @@
+# General
+
+- This is a simple Vue3 project with TypeScript support
+- Use Playwright for the end-to-end tests
+
+# File Structure
+
+- src/            # Main application code
+- tests/
+  - **/*.spec.ts  # Playwright E2E test suite
+  - **/*.feature  # Feature specification in Gherkin syntax
